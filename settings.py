@@ -13,14 +13,11 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text")
 
-# Text Processing
-MAX_TEXT_LENGTH = int(os.getenv("MAX_TEXT_LENGTH", "10000"))
+# Text Processing - More permissive settings
+MAX_TEXT_LENGTH = int(os.getenv("MAX_TEXT_LENGTH", "15000"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
-
-# Search Configuration
-TOP_K_RESULTS = int(os.getenv("TOP_K_RESULTS", "5"))
-SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.7"))
+TOP_K_RESULTS = int(os.getenv("TOP_K_RESULTS", "5"))  # Increased results
+SIMILARITY_THRESHOLD = float(os.getenv("SIMILARITY_THRESHOLD", "0.3"))  # Much lower threshold
 
 # Validation
 if not QDRANT_URL or not QDRANT_API_KEY:

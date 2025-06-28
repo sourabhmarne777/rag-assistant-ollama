@@ -1,23 +1,18 @@
 from langchain_ollama import OllamaEmbeddings
-from config.settings import EMBEDDING_MODEL, OLLAMA_BASE_URL
+from settings import EMBEDDING_MODEL, OLLAMA_BASE_URL
 import logging
 
 logger = logging.getLogger(__name__)
 
 class EmbeddingService:
     def __init__(self):
-        try:
-            self.embedder = OllamaEmbeddings(
-                model=EMBEDDING_MODEL,
-                base_url=OLLAMA_BASE_URL
-            )
-            logger.info(f"Initialized embedder with model: {EMBEDDING_MODEL}")
-        except Exception as e:
-            logger.error(f"Failed to initialize embedder: {e}")
-            raise
+        self.embedder = OllamaEmbeddings(
+            model=EMBEDDING_MODEL,
+            base_url=OLLAMA_BASE_URL
+        )
 
     def embed_texts(self, texts):
-        """Embed multiple texts and return embeddings"""
+        """Convert texts to embeddings"""
         try:
             if not texts:
                 return []
@@ -29,14 +24,12 @@ class EmbeddingService:
             return []
 
     def embed_query(self, query):
-        """Embed a single query and return embedding"""
+        """Convert query to embedding"""
         try:
             embedding = self.embedder.embed_query(query)
-            logger.info("Generated query embedding")
             return embedding
         except Exception as e:
             logger.error(f"Error embedding query: {e}")
             return None
 
-# Global instance
 embedding_service = EmbeddingService()
