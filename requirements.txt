@@ -1,0 +1,7 @@
+langchain
+qdrant-client
+beautifulsoup4
+requests
+openai
+tiktoken
+ollama
