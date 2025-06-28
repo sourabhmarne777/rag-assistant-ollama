@@ -1,7 +1,8 @@
 langchain
+langchain-ollama
 qdrant-client
 beautifulsoup4
 requests
-openai
-tiktoken
-ollama
+streamlit
+python-dotenv
+numpy
