@@ -261,7 +261,7 @@ def main():
                 st.markdown(message["content"])
     
     # Chat input
-    if prompt := st.chat_input("💭 Type your message here..."):
+    if prompt := st.chat_input("Type your message here..."):
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
         
