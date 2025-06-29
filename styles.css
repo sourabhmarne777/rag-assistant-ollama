@@ -1,0 +1,525 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Global Styles */
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Hide Streamlit elements */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+.stDeployButton {visibility: hidden;}
+
+/* CRITICAL: Completely disable sidebar collapse functionality */
+button[kind="header"],
+[data-testid="collapsedControl"],
+.css-1rs6os .css-17eq0hr,
+.css-1rs6os button[aria-label*="collapse"],
+.css-1rs6os button[aria-label*="Collapse"],
+.css-1d391kg .css-17eq0hr,
+.css-1d391kg button[title*="Collapse"],
+.css-1d391kg button[aria-label*="Collapse"],
+.css-1d391kg button[aria-label*="collapse"],
+button[aria-label="Collapse sidebar"],
+button[aria-label="collapse sidebar"],
+.css-1jc7ptx, .e1ewe7hr3, .viewerBadge_container__1QSob,
+.styles_viewerBadge__1yB5_, .viewerBadge_link__1S137,
+.viewerBadge_text__1JaDK {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Force sidebar to stay open */
+.css-1d391kg {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 340px !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+}
+
+/* Adjust main content to account for fixed sidebar */
+.main .block-container {
+    margin-left: 340px !important;
+    padding-left: 1rem !important;
+    max-width: calc(100% - 340px) !important;
+}
+
+/* Main Header */
+.main-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.2rem 1.5rem;
+    border-radius: 16px;
+    text-align: center;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.main-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.main-header p {
+    margin: 0.3rem 0 0 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Sidebar - Always open, optimized spacing */
+.css-1d391kg {
+    background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+    border-right: 1px solid #e9ecef;
+    padding: 0.5rem 0.7rem 0.7rem 0.7rem !important;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+/* Compact sidebar sections */
+.css-1d391kg .stMarkdown {
+    margin-bottom: 0.4rem;
+}
+
+.css-1d391kg .stMarkdown h3 {
+    margin: 0.6rem 0 0.4rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.css-1d391kg .stMarkdown p {
+    margin: 0.2rem 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #333 !important;
+}
+
+.css-1d391kg .stMarkdown strong {
+    font-size: 0.85rem;
+    color: #333 !important;
+    display: block;
+    margin: 0.25rem 0 0.15rem 0;
+    font-weight: 600;
+}
+
+/* Storage Cards - Enhanced with proper status colors */
+.storage-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin: 0.3rem 0;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    transition: none;
+}
+
+.storage-card-header {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.storage-card-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.3rem;
+}
+
+.storage-card-subtext {
+    font-size: 0.75rem;
+    color: #333 !important;
+    font-weight: 600 !important;
+    line-height: 1.3;
+}
+
+/* Status Card Colors */
+.status-card.status-healthy {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 1px solid #28a745;
+}
+
+.status-card.status-healthy .storage-card-value {
+    color: #155724;
+}
+
+.status-card.status-healthy .storage-card-subtext {
+    color: #155724 !important;
+}
+
+.status-card.status-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+}
+
+.status-card.status-warning .storage-card-value {
+    color: #856404;
+}
+
+.status-card.status-warning .storage-card-subtext {
+    color: #856404 !important;
+}
+
+.status-card.status-critical {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 1px solid #dc3545;
+}
+
+.status-card.status-critical .storage-card-value {
+    color: #721c24;
+}
+
+.status-card.status-critical .storage-card-subtext {
+    color: #721c24 !important;
+}
+
+/* Usage Card Colors */
+.usage-card {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 1px solid #2196f3;
+}
+
+.usage-card .storage-card-value {
+    color: #0d47a1;
+}
+
+.usage-card .storage-card-subtext {
+    color: #0d47a1 !important;
+}
+
+/* Chat Messages - Improved design */
+.stChatMessage {
+    padding: 1.2rem 1.4rem;
+    margin: 1rem 0;
+    border-radius: 18px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.stChatMessage[data-testid="chat-message-user"] {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border-left: 4px solid #2196f3;
+    margin-left: 2rem;
+}
+
+.stChatMessage[data-testid="chat-message-assistant"] {
+    background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
+    border-left: 4px solid #4caf50;
+    margin-right: 2rem;
+}
+
+/* File Upload Styling */
+.stFileUploader > div {
+    border: 2px dashed #667eea;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    background: rgba(102, 126, 234, 0.02);
+    transition: all 0.3s ease;
+}
+
+.stFileUploader > div:hover {
+    border-color: #764ba2;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+/* Hide file upload messages */
+.stFileUploader .stAlert,
+.stFileUploader .stSuccess,
+.stFileUploader .stError,
+.stAlert[data-testid*="file"],
+.stSuccess[data-testid*="file"],
+.stError[data-testid*="file"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Buttons - Professional styling */
+.stButton > button {
+    border-radius: 10px;
+    border: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-size: 0.85rem;
+    padding: 0.6rem 1.2rem;
+    min-height: 2.4rem;
+    line-height: 1.3;
+}
+
+.stButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* PERFECT: ChatGPT-style Chat Input */
+.stChatInput {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 340px !important;
+    right: 0 !important;
+    background: white !important;
+    padding: 1rem !important;
+    border-top: 1px solid #e9ecef !important;
+    z-index: 1000 !important;
+}
+
+.stChatInput > div {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    border-radius: 24px !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+    background: white !important;
+    overflow: hidden !important;
+}
+
+.stChatInput > div:focus-within {
+    border-color: #10a37f !important;
+    box-shadow: 0 4px 20px rgba(16, 163, 127, 0.2) !important;
+}
+
+/* Perfect input field styling */
+.stChatInput input,
+.stChatInput textarea,
+.stChatInput div[contenteditable="true"],
+.stChatInput div[data-testid="stChatInput"] input,
+.stChatInput div[data-testid="stChatInput"] textarea,
+.stChatInput div[data-testid="stChatInput"] div[contenteditable="true"],
+.stChatInput div[data-baseweb="base-input"] input,
+.stChatInput div[data-baseweb="base-input"] textarea {
+    color: #374151 !important;
+    background-color: transparent !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    -webkit-text-fill-color: #374151 !important;
+    caret-color: #10a37f !important;
+    padding: 12px 16px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    resize: none !important;
+    line-height: 1.5 !important;
+    min-height: 24px !important;
+    max-height: 200px !important;
+}
+
+.stChatInput input::placeholder,
+.stChatInput textarea::placeholder,
+.stChatInput div[contenteditable="true"]::placeholder {
+    color: #9ca3af !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #9ca3af !important;
+}
+
+/* Send button styling */
+.stChatInput button {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: #10a37f !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.stChatInput button:hover {
+    background: #0d9488 !important;
+}
+
+.stChatInput button:disabled {
+    background: #d1d5db !important;
+    cursor: not-allowed !important;
+}
+
+/* Adjust main content for fixed chat input */
+.main .block-container {
+    padding-bottom: 100px !important;
+}
+
+/* Text Input - Perfect visibility */
+.stTextInput > div > div > input {
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: white !important;
+    color: #1a1a1a !important;
+    padding: 0.7rem;
+    font-weight: 400 !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    caret-color: #1a1a1a !important;
+}
+
+.stTextInput > div > div > input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.stTextInput > div > div > input::placeholder {
+    color: #666 !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #666 !important;
+}
+
+/* Success/Warning/Error messages */
+.stAlert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+    margin: 0.4rem 0;
+    line-height: 1.4;
+}
+
+/* Info messages */
+.stInfo {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border-left: 4px solid #2196f3;
+    color: #1565c0;
+}
+
+/* Remove buttons - Clear styling */
+.stButton button[title="Remove file"],
+.stButton button[title="Remove URL"] {
+    background-color: #ff4757;
+    color: white;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    min-height: 2rem;
+    border-radius: 6px;
+    line-height: 1;
+}
+
+.stButton button[title="Remove file"]:hover,
+.stButton button[title="Remove URL"]:hover {
+    background-color: #ff3838;
+}
+
+/* Column spacing */
+.css-1d391kg .row-widget {
+    margin-bottom: 0.3rem;
+}
+
+.css-1d391kg .stColumns {
+    gap: 0.5rem;
+}
+
+/* Column buttons */
+.css-1d391kg .stColumns .stButton > button {
+    width: 100%;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    min-height: 2.2rem;
+}
+
+/* Success message styling */
+.stSuccess {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Chat container scrolling fix */
+.stChatMessage {
+    scroll-margin-top: 1rem;
+    scroll-margin-bottom: 1rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .css-1d391kg {
+        width: 280px !important;
+    }
+    
+    .main .block-container {
+        margin-left: 280px !important;
+        max-width: calc(100% - 280px) !important;
+    }
+    
+    .stChatInput {
+        left: 280px !important;
+    }
+    
+    .main-header {
+        padding: 1rem;
+    }
+    
+    .main-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stChatMessage[data-testid="chat-message-user"] {
+        margin-left: 0.5rem;
+    }
+    
+    .stChatMessage[data-testid="chat-message-assistant"] {
+        margin-right: 0.5rem;
+    }
+}
+
+/* Global text visibility fixes */
+input, textarea, [contenteditable="true"] {
+    color: #1a1a1a !important;
+    background-color: white !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    caret-color: #1a1a1a !important;
+}
+
+::placeholder {
+    color: #666 !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #666 !important;
+}

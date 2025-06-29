@@ -13,12 +13,27 @@ class LLMService:
         )
 
     def generate_answer(self, context, question):
-        """Generate answer using context and question"""
+        """Generate answer using context and question with better prompt handling"""
         try:
-            prompt = f"""Based on the following context, answer the question clearly and concisely.
+            if context.strip():
+                # RAG mode with context
+                prompt = f"""You are a helpful AI assistant. Based on the provided context, answer the user's question clearly and accurately.
 
 Context:
 {context}
+
+Question: {question}
+
+Instructions:
+- Answer based primarily on the provided context
+- If the context doesn't contain relevant information, say so clearly
+- Be concise but comprehensive
+- Use a conversational tone
+
+Answer:"""
+            else:
+                # General conversation mode
+                prompt = f"""You are a helpful AI assistant. Answer the user's question in a conversational and helpful manner.
 
 Question: {question}
 
@@ -26,12 +41,36 @@ Answer:"""
             
             # Ensure prompt fits in context window
             if len(prompt) > MAX_TEXT_LENGTH:
-                prompt = prompt[:MAX_TEXT_LENGTH]
+                # Truncate context while keeping the question and instructions
+                context_limit = MAX_TEXT_LENGTH - 500  # Reserve space for question and instructions
+                if context.strip():
+                    truncated_context = context[:context_limit] + "...[truncated]"
+                    prompt = f"""You are a helpful AI assistant. Based on the provided context, answer the user's question clearly and accurately.
+
+Context:
+{truncated_context}
+
+Question: {question}
+
+Instructions:
+- Answer based primarily on the provided context
+- If the context doesn't contain relevant information, say so clearly
+- Be concise but comprehensive
+- Use a conversational tone
+
+Answer:"""
+                else:
+                    prompt = f"""You are a helpful AI assistant. Answer the user's question in a conversational and helpful manner.
+
+Question: {question}
+
+Answer:"""
             
             response = self.llm.invoke(prompt)
-            return response
+            return response.strip()
+            
         except Exception as e:
             logger.error(f"Error generating answer: {e}")
-            return "Sorry, I couldn't generate an answer due to an error."
+            return "I'm sorry, I encountered an error while generating a response. Please try again."
 
 llm_service = LLMService()

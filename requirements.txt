@@ -6,3 +6,5 @@ requests
 streamlit
 python-dotenv
 numpy
+PyPDF2
+python-docx

@@ -48,25 +48,27 @@ class VectorStore:
             logger.error(f"Error adding documents: {e}")
             return False
 
-    def search_similar(self, query_vector):
-        """Search for similar documents with more permissive settings"""
+    def search_similar(self, query_vector, limit=None):
+        """Search for similar documents with improved parameters"""
         try:
-            # First try with threshold
+            search_limit = limit or TOP_K_RESULTS
+            
+            # First try with a reasonable threshold
             results = self.client.search(
                 collection_name=COLLECTION_NAME,
                 query_vector=query_vector,
-                limit=TOP_K_RESULTS,
-                score_threshold=SIMILARITY_THRESHOLD,
+                limit=search_limit,
+                score_threshold=0.1,  # Lower threshold for better recall
                 with_payload=True
             )
             
             # If no results with threshold, try without threshold
             if not results:
-                logger.info(f"No results with threshold {SIMILARITY_THRESHOLD}, trying without threshold")
+                logger.info("No results with threshold, trying without threshold")
                 results = self.client.search(
                     collection_name=COLLECTION_NAME,
                     query_vector=query_vector,
-                    limit=TOP_K_RESULTS,
+                    limit=search_limit,
                     with_payload=True
                 )
             
@@ -77,7 +79,9 @@ class VectorStore:
                 'score': hit.score
             } for hit in results]
             
-            logger.info(f"Found {len(search_results)} documents (threshold: {SIMILARITY_THRESHOLD})")
+            # Create score list for logging
+            score_list = [f"{r['score']:.3f}" for r in search_results[:3]]
+            logger.info(f"Found {len(search_results)} documents with scores: {score_list}")
             return search_results
             
         except Exception as e:
@@ -94,12 +98,22 @@ class VectorStore:
             return False
 
     def get_storage_stats(self):
-        """Get storage usage statistics"""
+        """Get storage usage statistics with proper calculation"""
         try:
             info = self.client.get_collection(COLLECTION_NAME)
-            current_count = info.vectors_count or 0
-            limit = 1000000  # Free tier limit
-            usage_percent = (current_count / limit) * 100
+            
+            # Get current vector count
+            current_count = 0
+            if hasattr(info, 'vectors_count') and info.vectors_count is not None:
+                current_count = info.vectors_count
+            elif hasattr(info, 'points_count') and info.points_count is not None:
+                current_count = info.points_count
+            elif hasattr(info, 'status') and hasattr(info.status, 'points_count'):
+                current_count = info.status.points_count or 0
+            
+            # Free tier limit (1M vectors)
+            limit = 1000000
+            usage_percent = (current_count / limit) * 100 if limit > 0 else 0
             
             return {
                 'current_vectors': current_count,
@@ -127,21 +141,16 @@ class VectorStore:
             logger.error(f"Error resetting collection: {e}")
             return False
 
-    def get_all_documents(self):
-        """Debug: Get all documents in collection"""
+    def clear_all_data(self):
+        """Clear all data from the collection"""
         try:
-            points, _ = self.client.scroll(
-                collection_name=COLLECTION_NAME,
-                limit=100,
-                with_payload=True
-            )
-            return [{
-                'url': point.payload['url'],
-                'title': point.payload['title'],
-                'content_length': len(point.payload['content'])
-            } for point in points]
+            # Delete and recreate collection to clear all data
+            self.client.delete_collection(COLLECTION_NAME)
+            self.setup_collection()
+            logger.info("All data cleared from collection")
+            return True
         except Exception as e:
-            logger.error(f"Error getting all documents: {e}")
-            return []
+            logger.error(f"Error clearing all data: {e}")
+            return False
 
 vector_store = VectorStore()
