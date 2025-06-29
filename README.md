@@ -1,191 +1,259 @@
-# RAG Assistant Chatbot
+# RAG Assistant with Ollama & Qdrant
 
-A powerful RAG (Retrieval-Augmented Generation) chatbot built with Streamlit that can process documents, scrape web content, and provide contextual answers using Qdrant vector database and Ollama models.
+A production-grade Retrieval-Augmented Generation (RAG) assistant that combines local AI models via Ollama with cloud-hosted vector storage using Qdrant. Built with Streamlit for an intuitive web interface.
 
-## Features
+## 🚀 Features
 
-- 📄 **Document Processing**: Upload and process PDF, TXT, and DOCX files
-- 🌐 **Web Scraping**: Extract content from URLs and add to knowledge base
-- 🤖 **AI-Powered Chat**: Chat with your documents using Ollama models
-- 🔍 **Semantic Search**: Find relevant information using vector similarity
-- 📊 **Knowledge Base Management**: Track and manage your document collection
-- 🎨 **User-Friendly Interface**: Clean, intuitive Streamlit interface
+- **📁 Document Processing**: Upload and process PDF, TXT, and CSV files
+- **🌐 Web Scraping**: Extract content from web URLs using BeautifulSoup
+- **🔍 Semantic Search**: Advanced vector similarity search with session-based filtering
+- **💬 Interactive Chat**: Natural language querying with context-aware responses
+- **🏷️ Smart Tagging**: Metadata-based document organization and retrieval
+- **🔒 Session Isolation**: Each session maintains separate document contexts
+- **⚡ Local AI**: Fast inference using Ollama with Mistral model
+- **☁️ Cloud Vector Store**: Scalable vector storage with Qdrant Cloud
 
-## Technologies Used
+## 🏗️ Architecture
 
-- **Frontend**: Streamlit
-- **LLM**: Ollama (Mistral, Llama2, etc.)
-- **Vector Database**: Qdrant Cloud
-- **Document Processing**: PyPDF2, python-docx
-- **Web Scraping**: BeautifulSoup4, Requests
-- **Embeddings**: Ollama embeddings (nomic-embed-text)
-- **Framework**: LangChain
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Streamlit UI  │────│  RAG Pipeline    │────│  Qdrant Cloud   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                              │
+                    ┌──────────────────┐
+                    │  Ollama (Local)  │
+                    │  - Mistral LLM   │
+                    │  - Embeddings    │
+                    └──────────────────┘
+```
 
-## Prerequisites
+### Core Components
 
-1. **Qdrant Cloud Account**: Sign up at [Qdrant Cloud](https://cloud.qdrant.io/)
-2. **Ollama**: Install and run Ollama locally
+1. **Document Processor**: Handles PDF, TXT, and CSV file processing
+2. **Web Scraper**: Extracts clean content from web URLs
+3. **Vector Store**: Qdrant integration with session-based filtering
+4. **LLM Client**: Ollama integration for local AI inference
+5. **Embedding Client**: Generates vector embeddings using nomic-embed-text
+6. **RAG Pipeline**: Orchestrates the entire retrieval-augmented generation flow
+
+### Tag-Based Filtering Logic
+
+Each document chunk is stored with metadata:
+```json
+{
+  "source_type": "document" | "web",
+  "source_name": "filename_or_url",
+  "session_id": "unique_session_identifier",
+  "chunk_id": "chunk_index"
+}
+```
+
+When querying, only vectors matching the current session are retrieved, ensuring context isolation.
+
+## 🛠️ Setup Instructions
+
+### Prerequisites
+
+- Python 3.8+
+- [Ollama](https://ollama.ai/) installed and running
+- Qdrant Cloud account (free tier available)
+
+### Linux Setup
+
+1. **Clone the repository**
    ```bash
-   # Install Ollama
-   curl -fsSL https://ollama.ai/install.sh | sh
-   
-   # Pull required models
-   ollama pull mistral
-   ollama pull nomic-embed-text
-   
-   # Start Ollama server
-   ollama serve
+   git clone https://github.com/sourabhmarne777/rag-assistant-ollama.git
+   cd rag-assistant-ollama
    ```
 
-## Installation
-
-1. **Clone the repository**:
+2. **Create virtual environment**
    ```bash
-   git clone <repository-url>
-   cd rag-assistant-chatbot
+   python3 -m venv venv
+   source venv/bin/activate
    ```
 
-2. **Install dependencies**:
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Configure environment variables**:
-   Update the `.env` file with your Qdrant credentials:
-   ```env
-   # Qdrant Cloud Configuration (Required)
-   QDRANT_URL=your_qdrant_cluster_url
-   QDRANT_API_KEY=your_qdrant_api_key
-   COLLECTION_NAME=rag_documents
-
-   # Ollama Configuration (Local AI Models)
-   OLLAMA_BASE_URL=http://localhost:11434
-   OLLAMA_MODEL=mistral
-   EMBEDDING_MODEL=nomic-embed-text
-   ```
-
-## Usage
-
-1. **Start the application**:
+4. **Setup Ollama**
    ```bash
-   python run.py
+   # Install Ollama (if not already installed)
+   curl -fsSL https://ollama.ai/install.sh | sh
+   
+   # Start Ollama service
+   ollama serve
+   
+   # In another terminal, pull required models
+   ollama pull mistral
+   ollama pull nomic-embed-text
    ```
-   Or directly with Streamlit:
+
+5. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Qdrant credentials
+   ```
+
+6. **Run the application**
    ```bash
    streamlit run app.py
    ```
 
-2. **Access the application**:
-   Open your browser and go to `http://localhost:8501`
+### Windows Setup
 
-3. **Add content to your knowledge base**:
-   - **Upload Documents**: Use the sidebar to upload PDF, TXT, or DOCX files
-   - **Add Web Content**: Enter URLs to scrape and add web content
+1. **Clone the repository**
+   ```cmd
+   git clone https://github.com/sourabhmarne777/rag-assistant-ollama.git
+   cd rag-assistant-ollama
+   ```
 
-4. **Start chatting**:
-   - Ask questions about your uploaded documents
-   - Get contextual answers based on your knowledge base
-   - View sources and relevance scores for each response
+2. **Create virtual environment**
+   ```cmd
+   python -m venv venv
+   venv\Scripts\activate
+   ```
 
-## Project Structure
+3. **Install dependencies**
+   ```cmd
+   pip install -r requirements.txt
+   ```
+
+4. **Setup Ollama**
+   - Download and install Ollama from [ollama.ai](https://ollama.ai/)
+   - Open Command Prompt and run:
+   ```cmd
+   ollama serve
+   ```
+   - In another Command Prompt:
+   ```cmd
+   ollama pull mistral
+   ollama pull nomic-embed-text
+   ```
+
+5. **Configure environment**
+   ```cmd
+   copy .env.example .env
+   # Edit .env with your Qdrant credentials using notepad or your preferred editor
+   ```
+
+6. **Run the application**
+   ```cmd
+   streamlit run app.py
+   ```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create a `.env` file with the following variables:
+
+```env
+# Qdrant Cloud Configuration
+QDRANT_URL=https://your-cluster-url.qdrant.io
+QDRANT_API_KEY=your-qdrant-api-key
+COLLECTION_NAME=rag_documents
+
+# Ollama Configuration
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=mistral
+EMBEDDING_MODEL=nomic-embed-text
+```
+
+### Qdrant Cloud Setup
+
+1. Sign up at [Qdrant Cloud](https://cloud.qdrant.io/)
+2. Create a new cluster (free tier: 1GB storage, 100K vectors)
+3. Get your cluster URL and API key
+4. Update the `.env` file with your credentials
+
+## 📖 Usage
+
+1. **Start the application**: `streamlit run app.py`
+2. **Upload documents**: Use the file uploader to add PDF, TXT, or CSV files
+3. **Scrape web content**: Enter URLs to extract and process web content
+4. **Chat with your data**: Ask questions about the uploaded/scraped content
+5. **Session management**: Use "New Session" to start fresh with different documents
+
+### Sample Documents and URLs
+
+Try these examples to test the system:
+
+**Sample URLs:**
+- https://en.wikipedia.org/wiki/Artificial_intelligence
+- https://docs.python.org/3/tutorial/
+- https://streamlit.io/
+
+**Sample Questions:**
+- "What are the main topics discussed in the documents?"
+- "Summarize the key points from the uploaded content"
+- "What specific information is available about [topic]?"
+
+## 🔧 Development
+
+### Project Structure
 
 ```
-rag-assistant-chatbot/
+rag-assistant-ollama/
 ├── app.py                 # Main Streamlit application
-├── run.py                 # Application runner with setup checks
 ├── requirements.txt       # Python dependencies
-├── .env                  # Environment configuration
+├── .env.example          # Environment variables template
 ├── README.md             # This file
-└── src/
-    ├── __init__.py       # Package initialization
-    ├── rag_system.py     # Core RAG system implementation
-    ├── document_processor.py  # Document processing utilities
-    ├── web_scraper.py    # Web scraping functionality
-    └── chat_interface.py # Chat interface utilities
+├── LICENSE               # MIT License
+└── src/                  # Source code modules
+    ├── __init__.py
+    ├── rag_pipeline.py    # Main RAG orchestration
+    ├── vector_store.py    # Qdrant integration
+    ├── llm_client.py      # Ollama LLM client
+    ├── embeddings.py      # Embedding generation
+    ├── document_processor.py # Document processing
+    └── web_scraper.py     # Web content extraction
 ```
 
-## Configuration Options
+### Key Design Decisions
 
-### Model Settings
-- **Ollama Model**: Choose from mistral, llama2, codellama, neural-chat
-- **Embedding Model**: Select embedding model for vector generation
+1. **Session-based Isolation**: Each user session maintains separate document contexts
+2. **Modular Architecture**: Clear separation of concerns for maintainability
+3. **Error Handling**: Comprehensive error handling and user feedback
+4. **Scalable Storage**: Cloud-based vector storage for production use
+5. **Local AI**: Privacy-focused local model inference
 
-### RAG Settings
-- **Similarity Threshold**: Minimum similarity score for relevant documents (0.0-1.0)
-- **Max Results**: Maximum number of relevant documents to retrieve (1-10)
+## 🚀 Deployment
 
-### Document Processing
-- **Chunk Size**: Size of text chunks for processing (default: 1000)
-- **Chunk Overlap**: Overlap between chunks (default: 200)
+For production deployment:
 
-## Supported File Types
+1. **Docker**: Create a Dockerfile for containerized deployment
+2. **Cloud Hosting**: Deploy on AWS, GCP, or Azure
+3. **Environment**: Use production-grade environment variable management
+4. **Monitoring**: Add logging and monitoring for production use
 
-- **PDF**: Portable Document Format files
-- **TXT**: Plain text files
-- **DOCX**: Microsoft Word documents
-
-## Web Scraping
-
-The application can extract content from web pages by:
-- Removing navigation, ads, and other non-content elements
-- Extracting main article/content areas
-- Cleaning and normalizing text
-- Handling various website structures
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Ollama Connection Error**:
-   - Ensure Ollama is running: `ollama serve`
-   - Check if models are installed: `ollama list`
-   - Verify OLLAMA_BASE_URL in .env file
-
-2. **Qdrant Connection Error**:
-   - Verify QDRANT_URL and QDRANT_API_KEY in .env file
-   - Check Qdrant Cloud dashboard for cluster status
-
-3. **Document Processing Error**:
-   - Ensure uploaded files are not corrupted
-   - Check file size limits
-   - Verify file format is supported
-
-4. **Web Scraping Issues**:
-   - Some websites may block scraping
-   - Check if URL is accessible
-   - Verify internet connection
-
-### Performance Tips
-
-- Use smaller chunk sizes for more precise retrieval
-- Adjust similarity threshold based on your use case
-- Regularly clear unused documents from knowledge base
-- Monitor Qdrant storage usage
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- [Streamlit](https://streamlit.io/) for the amazing web framework
-- [LangChain](https://langchain.com/) for RAG implementation tools
-- [Qdrant](https://qdrant.tech/) for vector database capabilities
-- [Ollama](https://ollama.ai/) for local LLM inference
-- [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/) for web scraping
+- [Ollama](https://ollama.ai/) for local AI model serving
+- [Qdrant](https://qdrant.tech/) for vector database technology
+- [Streamlit](https://streamlit.io/) for the web interface framework
+- [LangChain](https://langchain.com/) for RAG pipeline components
 
-## Support
+## 📞 Support
 
-If you encounter any issues or have questions, please:
-1. Check the troubleshooting section above
-2. Review the logs for error messages
-3. Open an issue on the repository
-4. Provide detailed error information and steps to reproduce
+For questions or issues:
+- Open an issue on GitHub
+- Check the documentation
+- Review the sample configurations
+
+---
+
+**Built with ❤️ for the AI/ML community**
