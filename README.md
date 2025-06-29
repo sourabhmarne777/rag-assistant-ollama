@@ -23,19 +23,19 @@ A production-grade **Retrieval-Augmented Generation (RAG)** assistant that combi
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Streamlit UI  │────│  RAG Pipeline    │────│  Qdrant Cloud   │
-│   - File Upload │    │  - Orchestration │    │  - Vector Store │
-│   - Chat Interface│   │  - Session Mgmt  │    │  - Similarity   │
-│   - URL Input   │    │  - Error Handling│    │    Search       │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                              │
-                    ┌──────────────────┐
-                    │  Ollama (Local)  │
-                    │  - Mistral LLM   │
-                    │  - nomic-embed   │
-                    │  - Privacy First │
-                    └──────────────────┘
+┌───────────────────┐    ┌───────────────────┐    ┌─────────────────┐
+│    Streamlit UI   │────│  RAG Pipeline     │────│  Qdrant Cloud   │
+│  - File Upload    │    │  - Orchestration  │    │  - Vector Store │
+│  - Chat Interface │    │  - Session Mgmt   │    │  - Similarity   │
+│  - URL Input      │    │  - Error Handling │    │  - Search       │
+└───────────────────┘    └───────────────────┘    └─────────────────┘
+                                   │
+                          ┌──────────────────┐
+                          │  Ollama (Local)  │
+                          │  - Mistral LLM   │
+                          │  - nomic-embed   │
+                          │  - Privacy First │
+                          └──────────────────┘
 ```
 
 ### 🔧 Core Components
@@ -460,40 +460,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - ❗ **Liability**: No warranty provided
 - ❗ **Attribution**: Include original license and copyright
 
-## 🙏 Acknowledgments
-
-- **[Ollama](https://ollama.ai/)** - For making local AI models accessible and easy to use
-- **[Qdrant](https://qdrant.tech/)** - For providing excellent vector database technology
-- **[Streamlit](https://streamlit.io/)** - For the amazing web interface framework
-- **[LangChain](https://langchain.com/)** - For RAG pipeline components and utilities
-- **Open Source Community** - For the countless libraries that make this project possible
-
-## 📞 Support & Community
-
-### Getting Help
-- **GitHub Issues**: Report bugs and request features
-- **Discussions**: Join community discussions on GitHub
-- **Documentation**: Check this README and code comments
-- **Examples**: Review the sample configurations and use cases
-
-### Stay Updated
-- **Star the Repository** ⭐ to stay updated with new features
-- **Watch Releases** 👀 for important updates
-- **Follow the Project** 📢 for announcements
-
-### Contributing to the Community
-- **Share Your Use Cases**: Help others learn from your implementations
-- **Report Issues**: Help improve the project by reporting bugs
-- **Suggest Features**: Share ideas for new functionality
-- **Write Tutorials**: Create guides for specific use cases
-
----
-
-**Built with ❤️ for the AI/ML community**
-
-*This project demonstrates the power of combining local AI models with cloud vector storage to create privacy-focused, scalable RAG applications. Perfect for learning, research, and production use cases.*
-
----
 
 ### 🔗 Quick Links
 
@@ -503,11 +469,3 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - [Python Virtual Environments](https://docs.python.org/3/tutorial/venv.html)
 - [Git Installation](https://git-scm.com/downloads)
 
-### 📈 Project Stats
-
-- **Language**: Python 3.8+
-- **Framework**: Streamlit
-- **AI Models**: Ollama (Mistral, nomic-embed-text)
-- **Vector DB**: Qdrant Cloud
-- **License**: MIT
-- **Maintenance**: Actively maintained

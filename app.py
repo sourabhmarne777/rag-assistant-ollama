@@ -31,6 +31,16 @@ st.markdown("""
         background-color: transparent;
     }
     
+    /* Hide empty elements and whitespace */
+    .element-container:has(> .stMarkdown > div[data-testid="stMarkdownContainer"] > p:empty) {
+        display: none;
+    }
+    
+    /* Hide empty markdown containers */
+    .stMarkdown > div[data-testid="stMarkdownContainer"]:empty {
+        display: none;
+    }
+    
     /* Upload box styling */
     .upload-box {
         border: 2px dashed #cccccc;
@@ -182,6 +192,11 @@ st.markdown("""
         color: #1976d2;
         font-weight: 500;
     }
+    
+    /* Hide file uploader label when files are uploaded */
+    .stFileUploader > label {
+        display: none;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -214,6 +229,14 @@ def initialize_session_state():
     # Current URL input state
     if 'current_url' not in st.session_state:
         st.session_state.current_url = ""
+    
+    # File uploader key for clearing uploaded files
+    if 'file_uploader_key' not in st.session_state:
+        st.session_state.file_uploader_key = 0
+    
+    # Chat input key for clearing input after submission
+    if 'chat_input_key' not in st.session_state:
+        st.session_state.chat_input_key = 0
 
 def check_system_status():
     """Check if Ollama is running and accessible"""
@@ -236,6 +259,9 @@ def show_loading_indicator(message: str):
 
 def process_files(uploaded_files):
     """Process uploaded files and convert them to searchable chunks"""
+    if not uploaded_files:
+        return
+        
     processor = DocumentProcessor()
     total_chunks = 0
     
@@ -349,6 +375,8 @@ def process_url(url):
                 st.success(f"✅ Processed content from URL ({len(chunks)} chunks)")
                 # Clear the URL input after successful processing
                 st.session_state.current_url = ""
+                # Force rerun to clear the URL input field
+                st.rerun()
             else:
                 st.warning("⚠️ Issues processing URL content - check console for details")
         else:
@@ -392,14 +420,22 @@ def handle_chat_input(user_question):
             st.error(f"❌ Error: {str(e)}")
 
 def clear_all_data():
-    """Clear all data including chat, documents, and URLs"""
+    """Clear all data including chat, documents, URLs, and uploaded files"""
     # Reset all session state variables
     st.session_state.chat_history = []
     st.session_state.documents_count = 0
     st.session_state.processed_files = set()
     st.session_state.processed_urls = set()
     st.session_state.current_url = ""
+    
+    # Generate new session ID for complete isolation
     st.session_state.session_id = str(uuid.uuid4())
+    
+    # Increment file uploader key to clear uploaded files
+    st.session_state.file_uploader_key += 1
+    
+    # Increment chat input key to clear chat input
+    st.session_state.chat_input_key += 1
     
     # Clear from vector store (session-based cleanup)
     try:
@@ -452,7 +488,8 @@ def main():
             "Choose files",
             type=['pdf', 'txt', 'csv'],
             accept_multiple_files=True,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
+            key=f"file_uploader_{st.session_state.file_uploader_key}"
         )
         
         # Auto-process files when uploaded
@@ -489,7 +526,7 @@ def main():
     # Clear All button at the top of chat section
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
-        if st.button("🗑️ Clear All", use_container_width=True, help="Clear chat, documents, and URLs"):
+        if st.button("🗑️ Clear All", use_container_width=True, help="Clear chat, documents, URLs, and uploaded files"):
             clear_all_data()
             st.rerun()
     
@@ -520,9 +557,6 @@ def main():
         st.markdown('</div>', unsafe_allow_html=True)
     
     # Chat input with Enter key support
-    if 'chat_input_key' not in st.session_state:
-        st.session_state.chat_input_key = 0
-    
     # Create form for Enter key support
     with st.form(key=f"chat_form_{st.session_state.chat_input_key}", clear_on_submit=True):
         user_question = st.text_input(
