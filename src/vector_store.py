@@ -7,35 +7,51 @@ from langchain.schema import Document
 import uuid
 
 class QdrantVectorStore:
-    """Qdrant vector store implementation with session-based filtering"""
+    """
+    Qdrant vector store implementation with session-based filtering.
+    
+    This class handles all vector database operations including:
+    - Collection management and indexing
+    - Document storage with metadata
+    - Similarity search with filtering
+    - Session-based data isolation
+    """
     
     def __init__(self):
+        """Initialize Qdrant client and collection"""
+        # Initialize Qdrant client with cloud credentials
         self.client = QdrantClient(
             url=os.getenv("QDRANT_URL"),
             api_key=os.getenv("QDRANT_API_KEY")
         )
+        
+        # Collection configuration
         self.collection_name = os.getenv("COLLECTION_NAME", "rag_documents")
-        self.vector_size = 768  # nomic-embed-text embedding size
+        self.vector_size = 768  # nomic-embed-text embedding dimension
+        
+        # Ensure collection exists with proper configuration
         self._ensure_collection_exists()
     
     def _ensure_collection_exists(self):
-        """Create collection if it doesn't exist with proper indexing"""
+        """Create collection if it doesn't exist with proper indexing for efficient filtering"""
         try:
+            # Check if collection already exists
             collections = self.client.get_collections()
             collection_names = [col.name for col in collections.collections]
             
             if self.collection_name not in collection_names:
-                # Create collection with vector config
+                # Create new collection with vector configuration
                 self.client.create_collection(
                     collection_name=self.collection_name,
                     vectors_config=VectorParams(
-                        size=self.vector_size,
-                        distance=Distance.COSINE
+                        size=self.vector_size,      # Embedding dimension
+                        distance=Distance.COSINE    # Cosine similarity for semantic search
                     )
                 )
                 print(f"Created collection: {self.collection_name}")
             
-            # Create payload indexes for filtering
+            # Create payload indexes for efficient filtering
+            # Session ID index for session-based isolation
             try:
                 self.client.create_payload_index(
                     collection_name=self.collection_name,
@@ -47,6 +63,7 @@ class QdrantVectorStore:
                 if "already exists" not in str(e).lower():
                     print(f"Note: Could not create session_id index: {e}")
             
+            # Source type index for filtering by document/web content
             try:
                 self.client.create_payload_index(
                     collection_name=self.collection_name,
@@ -63,19 +80,31 @@ class QdrantVectorStore:
             raise
     
     def add_documents(self, documents: List[Document], embeddings: List[List[float]]) -> bool:
-        """Add documents with embeddings to the vector store"""
+        """
+        Add documents with embeddings to the vector store.
+        
+        Args:
+            documents: List of Document objects with content and metadata
+            embeddings: List of embedding vectors corresponding to documents
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
         try:
             points = []
+            
+            # Create point objects for each document-embedding pair
             for i, (doc, embedding) in enumerate(zip(documents, embeddings)):
-                # Skip if embedding is empty or invalid
+                # Skip documents with invalid embeddings
                 if not embedding or len(embedding) == 0:
                     print(f"Skipping document {i} due to invalid embedding")
                     continue
                 
+                # Create point with unique ID, vector, and metadata
                 point = PointStruct(
-                    id=str(uuid.uuid4()),
-                    vector=embedding,
-                    payload={
+                    id=str(uuid.uuid4()),  # Unique identifier
+                    vector=embedding,       # Vector representation
+                    payload={               # Metadata for filtering and retrieval
                         "content": doc.page_content,
                         "source_type": doc.metadata.get("source_type"),
                         "source_name": doc.metadata.get("source_name"),
@@ -85,11 +114,12 @@ class QdrantVectorStore:
                 )
                 points.append(point)
             
+            # Validate that we have points to upload
             if not points:
                 print("No valid points to upload")
                 return False
             
-            # Upload points to Qdrant
+            # Upload points to Qdrant collection
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=points
@@ -108,14 +138,24 @@ class QdrantVectorStore:
         k: int = 5, 
         filter_dict: Optional[Dict[str, Any]] = None
     ) -> List[Document]:
-        """Search for similar documents with optional filtering"""
+        """
+        Search for similar documents with optional filtering.
+        
+        Args:
+            query_embedding: Query vector for similarity search
+            k: Number of similar documents to return
+            filter_dict: Optional filters (e.g., {"session_id": "abc123"})
+            
+        Returns:
+            List of Document objects with similarity scores
+        """
         try:
-            # Skip if query embedding is invalid
+            # Validate query embedding
             if not query_embedding or len(query_embedding) == 0:
                 print("Invalid query embedding")
                 return []
             
-            # Build filter if provided
+            # Build filter conditions if provided
             query_filter = None
             if filter_dict:
                 conditions = []
@@ -128,7 +168,7 @@ class QdrantVectorStore:
                     )
                 query_filter = Filter(must=conditions)
             
-            # Perform search
+            # Perform similarity search in vector space
             search_results = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=query_embedding,
@@ -136,7 +176,7 @@ class QdrantVectorStore:
                 limit=k
             )
             
-            # Convert results to Document objects
+            # Convert search results to Document objects
             documents = []
             for result in search_results:
                 doc = Document(
@@ -146,7 +186,7 @@ class QdrantVectorStore:
                         "source_name": result.payload.get("source_name"),
                         "session_id": result.payload.get("session_id"),
                         "chunk_id": result.payload.get("chunk_id"),
-                        "score": result.score
+                        "score": result.score  # Similarity score
                     }
                 )
                 documents.append(doc)
@@ -158,7 +198,15 @@ class QdrantVectorStore:
             return []
     
     def get_documents_by_session(self, session_id: str) -> List[dict]:
-        """Get all documents for a specific session"""
+        """
+        Get all documents for a specific session.
+        
+        Args:
+            session_id: Session identifier
+            
+        Returns:
+            List of document dictionaries with metadata
+        """
         try:
             # Use scroll to get all documents for the session
             points, _ = self.client.scroll(
@@ -171,9 +219,10 @@ class QdrantVectorStore:
                         )
                     ]
                 ),
-                limit=1000  # Adjust as needed
+                limit=1000  # Adjust based on expected session size
             )
             
+            # Convert points to document dictionaries
             documents = []
             for point in points:
                 documents.append({
@@ -191,8 +240,17 @@ class QdrantVectorStore:
             return []
     
     def delete_by_session(self, session_id: str) -> bool:
-        """Delete all documents for a specific session"""
+        """
+        Delete all documents for a specific session.
+        
+        Args:
+            session_id: Session identifier
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
         try:
+            # Delete all points matching the session ID
             self.client.delete(
                 collection_name=self.collection_name,
                 points_selector=Filter(
@@ -212,11 +270,17 @@ class QdrantVectorStore:
             return False
     
     def get_collection_info(self) -> dict:
-        """Get information about the collection"""
+        """
+        Get information about the collection.
+        
+        Returns:
+            Dictionary with collection statistics
+        """
         try:
             info = self.client.get_collection(self.collection_name)
             return {
-                "name": info.config.params.vectors.size,
+                "name": self.collection_name,
+                "vector_size": info.config.params.vectors.size,
                 "vectors_count": info.vectors_count,
                 "points_count": info.points_count
             }

@@ -5,17 +5,37 @@ import pandas as pd
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class DocumentProcessor:
-    """Process different types of documents and extract text"""
+    """
+    Process different types of documents and extract text with multiple fallback methods.
+    
+    This class handles:
+    - PDF processing with multiple extraction methods
+    - Text file processing with encoding detection
+    - CSV processing with data structure preservation
+    - Text chunking for optimal RAG performance
+    """
     
     def __init__(self):
+        """Initialize document processor with text splitter configuration"""
+        # Configure text splitter for optimal chunk sizes
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=200,
-            length_function=len,
+            chunk_size=1000,      # Maximum characters per chunk
+            chunk_overlap=200,    # Overlap to maintain context between chunks
+            length_function=len,  # Function to measure chunk length
         )
     
     def process_document(self, file_path: str, filename: str) -> List[str]:
-        """Process a document based on its file extension"""
+        """
+        Process a document based on its file extension.
+        
+        Args:
+            file_path: Path to the document file
+            filename: Original filename for extension detection
+            
+        Returns:
+            List of text chunks from the document
+        """
+        # Determine processing method based on file extension
         file_extension = filename.lower().split('.')[-1]
         
         if file_extension == 'pdf':
@@ -28,16 +48,39 @@ class DocumentProcessor:
             raise ValueError(f"Unsupported file type: {file_extension}")
     
     def process_text(self, text: str, source_name: str) -> List[str]:
-        """Process raw text and split into chunks"""
+        """
+        Process raw text and split into chunks.
+        
+        Args:
+            text: Raw text content
+            source_name: Name of the source (for error reporting)
+            
+        Returns:
+            List of text chunks
+        """
         if not text.strip():
             return []
         
-        # Split text into chunks
+        # Split text into manageable chunks
         chunks = self.text_splitter.split_text(text)
         return chunks
     
     def _process_pdf(self, file_path: str) -> List[str]:
-        """Extract text from PDF file with multiple fallback methods"""
+        """
+        Extract text from PDF file with multiple fallback methods.
+        
+        This method tries several approaches to handle different PDF types:
+        1. PyPDF2 with character cleaning
+        2. pdfplumber (if available)
+        3. Binary extraction fallback
+        4. Pattern-based extraction
+        
+        Args:
+            file_path: Path to PDF file
+            
+        Returns:
+            List of text chunks from PDF
+        """
         text = ""
         
         # Method 1: Try PyPDF2 with character cleaning
@@ -88,20 +131,29 @@ class DocumentProcessor:
             print("Trying pattern-based text extraction...")
             text = self._extract_pdf_pattern_fallback(file_path)
         
+        # Final validation
         if not text.strip():
             raise ValueError("No text could be extracted from the PDF. The PDF might be image-based, corrupted, or password-protected. Try converting it to a text-based PDF first.")
         
         return self.text_splitter.split_text(text)
     
     def _clean_pdf_text(self, text: str) -> str:
-        """Clean PDF text to handle encoding issues"""
+        """
+        Clean PDF text to handle encoding issues and problematic characters.
+        
+        Args:
+            text: Raw text from PDF
+            
+        Returns:
+            Cleaned text string
+        """
         if not text:
             return ""
         
         # Remove problematic Unicode characters
         problematic_chars = [
             '\udbef', '\udcef',  # Surrogate characters
-            '\ufeff',            # BOM
+            '\ufeff',            # BOM (Byte Order Mark)
             '\u200b', '\u200c', '\u200d',  # Zero-width characters
             '\u2028', '\u2029',  # Line/paragraph separators
         ]
@@ -123,7 +175,15 @@ class DocumentProcessor:
         return text
     
     def _extract_pdf_binary_fallback(self, file_path: str) -> str:
-        """Binary extraction fallback for problematic PDFs"""
+        """
+        Binary extraction fallback for problematic PDFs.
+        
+        Args:
+            file_path: Path to PDF file
+            
+        Returns:
+            Extracted text or empty string
+        """
         try:
             with open(file_path, 'rb') as file:
                 content = file.read()
@@ -161,7 +221,15 @@ class DocumentProcessor:
             return ""
     
     def _extract_pdf_pattern_fallback(self, file_path: str) -> str:
-        """Pattern-based extraction for difficult PDFs"""
+        """
+        Pattern-based extraction for difficult PDFs.
+        
+        Args:
+            file_path: Path to PDF file
+            
+        Returns:
+            Extracted text or empty string
+        """
         try:
             with open(file_path, 'rb') as file:
                 content = file.read()
@@ -171,7 +239,7 @@ class DocumentProcessor:
             
             import re
             
-            # Look for various text patterns
+            # Look for various text patterns in PDF structure
             patterns = [
                 r'/Title\s*\((.*?)\)',  # PDF title
                 r'/Subject\s*\((.*?)\)',  # PDF subject
@@ -197,9 +265,17 @@ class DocumentProcessor:
             return ""
     
     def _process_txt(self, file_path: str) -> List[str]:
-        """Process plain text file with multiple encoding support"""
+        """
+        Process plain text file with multiple encoding support.
+        
+        Args:
+            file_path: Path to text file
+            
+        Returns:
+            List of text chunks
+        """
         try:
-            # Try multiple encodings
+            # Try multiple encodings to handle different file types
             encodings = ['utf-8', 'utf-16', 'latin-1', 'cp1252', 'ascii']
             text = None
             
@@ -211,8 +287,8 @@ class DocumentProcessor:
                 except UnicodeDecodeError:
                     continue
             
+            # Last resort: read as binary and decode with error handling
             if text is None:
-                # Last resort: read as binary and decode with error handling
                 with open(file_path, 'rb') as file:
                     raw_content = file.read()
                     text = raw_content.decode('utf-8', errors='ignore')
@@ -226,9 +302,17 @@ class DocumentProcessor:
             raise ValueError(f"Error processing text file: {str(e)}")
     
     def _process_csv(self, file_path: str) -> List[str]:
-        """Process CSV file with encoding detection"""
+        """
+        Process CSV file with encoding detection and structure preservation.
+        
+        Args:
+            file_path: Path to CSV file
+            
+        Returns:
+            List of text chunks representing CSV data
+        """
         try:
-            # Try multiple encodings for CSV
+            # Try multiple encodings for CSV files
             encodings = ['utf-8', 'latin-1', 'cp1252', 'utf-16']
             df = None
             
@@ -251,7 +335,7 @@ class DocumentProcessor:
             # Convert DataFrame to text representation
             text_parts = []
             
-            # Add column headers
+            # Add column headers and basic info
             text_parts.append("CSV Data Structure:")
             text_parts.append(f"Columns: {', '.join(df.columns.tolist())}")
             text_parts.append(f"Total rows: {len(df)}")
@@ -272,10 +356,11 @@ class DocumentProcessor:
                 row_text += ", ".join(row_items)
                 text_parts.append(row_text)
             
+            # Add note if there are more rows
             if len(df) > max_rows:
                 text_parts.append(f"\n... and {len(df) - max_rows} more rows")
             
-            # Join all parts
+            # Join all parts into final text
             full_text = "\n".join(text_parts)
             
             return self.text_splitter.split_text(full_text)
@@ -284,7 +369,15 @@ class DocumentProcessor:
             raise ValueError(f"Error processing CSV file: {str(e)}")
     
     def get_file_info(self, file_path: str) -> dict:
-        """Get basic information about a file"""
+        """
+        Get basic information about a file.
+        
+        Args:
+            file_path: Path to file
+            
+        Returns:
+            Dictionary with file information
+        """
         try:
             file_size = os.path.getsize(file_path)
             file_name = os.path.basename(file_path)

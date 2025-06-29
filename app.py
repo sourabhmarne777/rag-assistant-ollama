@@ -7,10 +7,10 @@ from src.web_scraper import WebScraper
 import uuid
 import tempfile
 
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 
-# Page configuration
+# Page configuration - must be the first Streamlit command
 st.set_page_config(
     page_title="RAG Assistant",
     page_icon="🤖",
@@ -18,17 +18,20 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for clean, minimal styling
+# Custom CSS for clean, minimal styling with improved UX
 st.markdown("""
 <style>
+    /* Main container styling */
     .main {
         padding-top: 2rem;
     }
     
+    /* Hide Streamlit header */
     .stApp > header {
         background-color: transparent;
     }
     
+    /* Upload box styling */
     .upload-box {
         border: 2px dashed #cccccc;
         border-radius: 10px;
@@ -38,6 +41,7 @@ st.markdown("""
         background-color: #fafafa;
     }
     
+    /* Chat container styling */
     .chat-container {
         background-color: #f8f9fa;
         border-radius: 10px;
@@ -47,6 +51,7 @@ st.markdown("""
         overflow-y: auto;
     }
     
+    /* Message styling */
     .message {
         padding: 1rem;
         margin: 0.5rem 0;
@@ -54,12 +59,14 @@ st.markdown("""
         color: #333333;
     }
     
+    /* User message styling */
     .user-message {
         background-color: #e3f2fd;
         margin-left: 2rem;
         color: #1565c0;
     }
     
+    /* Assistant message styling */
     .assistant-message {
         background-color: #ffffff;
         border: 1px solid #e0e0e0;
@@ -67,6 +74,7 @@ st.markdown("""
         color: #333333;
     }
     
+    /* Source tag styling */
     .source-tag {
         background-color: #fff3e0;
         color: #f57c00;
@@ -77,6 +85,7 @@ st.markdown("""
         display: inline-block;
     }
     
+    /* Status indicator styling */
     .status-indicator {
         padding: 0.5rem 1rem;
         border-radius: 20px;
@@ -85,6 +94,7 @@ st.markdown("""
         text-align: center;
     }
     
+    /* Status indicator variants */
     .status-ready {
         background-color: #e8f5e8;
         color: #2e7d32;
@@ -100,6 +110,7 @@ st.markdown("""
         color: #c62828;
     }
     
+    /* Clear button styling */
     .clear-button {
         background-color: #ff5722;
         color: white;
@@ -109,70 +120,161 @@ st.markdown("""
         cursor: pointer;
         margin-top: 1rem;
     }
+    
+    /* Fix send button styling */
+    .stButton > button {
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        background-color: #1565c0;
+        border: none;
+    }
+    
+    .stButton > button:focus {
+        background-color: #1565c0;
+        border: none;
+        box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.3);
+    }
+    
+    /* URL section styling */
+    .url-section {
+        margin-bottom: 1rem;
+    }
+    
+    .url-button-container {
+        margin-top: 0.5rem;
+    }
+    
+    /* Loading indicator styling */
+    .loading-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background-color: #f0f8ff;
+        border-radius: 8px;
+        border-left: 4px solid #1976d2;
+        margin: 1rem 0;
+    }
+    
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #e3f2fd;
+        border-top: 2px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        color: #1976d2;
+        font-weight: 500;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 def initialize_session_state():
-    """Initialize session state variables"""
+    """Initialize session state variables for the application"""
+    # Generate unique session ID for document isolation
     if 'session_id' not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
     
+    # Initialize RAG pipeline (main orchestrator)
     if 'rag_pipeline' not in st.session_state:
         st.session_state.rag_pipeline = RAGPipeline()
     
+    # Initialize chat history for conversation tracking
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
     
+    # Track number of processed documents
     if 'documents_count' not in st.session_state:
         st.session_state.documents_count = 0
     
+    # Track processed files to avoid duplicates
     if 'processed_files' not in st.session_state:
         st.session_state.processed_files = set()
     
+    # Track processed URLs to avoid duplicates
     if 'processed_urls' not in st.session_state:
         st.session_state.processed_urls = set()
+    
+    # Current URL input state
+    if 'current_url' not in st.session_state:
+        st.session_state.current_url = ""
 
 def check_system_status():
-    """Check if Ollama is running"""
+    """Check if Ollama is running and accessible"""
     try:
         from src.llm_client import OllamaClient
         ollama_client = OllamaClient()
         return ollama_client.check_connection()
-    except:
+    except Exception as e:
+        print(f"Error checking system status: {e}")
         return False
 
+def show_loading_indicator(message: str):
+    """Display a loading indicator with custom message"""
+    st.markdown(f"""
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">{message}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 def process_files(uploaded_files):
-    """Process uploaded files"""
+    """Process uploaded files and convert them to searchable chunks"""
     processor = DocumentProcessor()
     total_chunks = 0
     
-    # Filter out already processed files
+    # Filter out already processed files to avoid duplicates
     new_files = []
     for file in uploaded_files:
+        # Create unique identifier for file (name + size)
         file_key = f"{file.name}_{file.size}"
         if file_key not in st.session_state.processed_files:
             new_files.append(file)
             st.session_state.processed_files.add(file_key)
     
+    # Exit early if no new files to process
     if not new_files:
         return
     
+    # Show loading indicator for user feedback
+    loading_placeholder = st.empty()
+    with loading_placeholder.container():
+        show_loading_indicator("Processing uploaded files and creating chunks...")
+    
+    # Create progress bar for visual feedback
     progress_bar = st.progress(0)
     status_text = st.empty()
     
+    # Process each file individually
     for i, uploaded_file in enumerate(new_files):
         status_text.text(f"Processing {uploaded_file.name}...")
         
-        # Save uploaded file temporarily
+        # Save uploaded file temporarily for processing
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{uploaded_file.name.split('.')[-1]}") as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
             tmp_file_path = tmp_file.name
         
         try:
-            # Process the document
+            # Process the document into chunks
             chunks = processor.process_document(tmp_file_path, uploaded_file.name)
             
-            # Store in vector database
+            # Store chunks in vector database with session isolation
             success = st.session_state.rag_pipeline.add_documents(
                 chunks, 
                 source_type="document",
@@ -192,32 +294,44 @@ def process_files(uploaded_files):
             # Clean up temporary file
             os.unlink(tmp_file_path)
         
-        # Update progress
+        # Update progress bar
         progress_bar.progress((i + 1) / len(new_files))
     
+    # Clear loading indicators
+    loading_placeholder.empty()
     status_text.empty()
     progress_bar.empty()
     
+    # Update document count and show success message
     st.session_state.documents_count += len(new_files)
     if total_chunks > 0:
         st.success(f"✅ Processed {len(new_files)} files ({total_chunks} chunks)")
 
 def process_url(url):
-    """Process web URL"""
+    """Process web URL and extract content for RAG"""
+    # Check if URL already processed to avoid duplicates
     if url in st.session_state.processed_urls:
+        st.info("This URL has already been processed.")
         return
     
+    # Show loading indicator for user feedback
+    loading_placeholder = st.empty()
+    with loading_placeholder.container():
+        show_loading_indicator("Scraping web content and creating chunks...")
+    
     try:
+        # Initialize web scraper
         scraper = WebScraper()
         
-        with st.spinner("Scraping content..."):
-            content = scraper.scrape_url(url)
+        # Scrape content from URL
+        content = scraper.scrape_url(url)
         
         if content:
+            # Process scraped content into chunks
             processor = DocumentProcessor()
             chunks = processor.process_text(content, url)
             
-            # Store in vector database
+            # Store chunks in vector database with session isolation
             success = st.session_state.rag_pipeline.add_documents(
                 chunks,
                 source_type="web",
@@ -225,39 +339,49 @@ def process_url(url):
                 session_id=st.session_state.session_id
             )
             
+            # Clear loading indicator
+            loading_placeholder.empty()
+            
             if success:
+                # Update state and show success
                 st.session_state.documents_count += 1
                 st.session_state.processed_urls.add(url)
                 st.success(f"✅ Processed content from URL ({len(chunks)} chunks)")
+                # Clear the URL input after successful processing
+                st.session_state.current_url = ""
             else:
                 st.warning("⚠️ Issues processing URL content - check console for details")
         else:
+            loading_placeholder.empty()
             st.error("❌ Failed to scrape content from the URL")
             
     except Exception as e:
+        loading_placeholder.empty()
         st.error(f"❌ Error: {str(e)}")
 
 def handle_chat_input(user_question):
-    """Handle chat input and auto-process if needed"""
+    """Handle chat input and generate RAG response"""
+    # Check if documents are available
     if st.session_state.documents_count == 0:
         st.warning("⚠️ Please add some documents or web content first!")
         return
     
-    # Add user message
+    # Add user message to chat history
     st.session_state.chat_history.append({
         'role': 'user',
         'content': user_question
     })
     
+    # Generate response using RAG pipeline
     with st.spinner("Thinking..."):
         try:
-            # Get response
+            # Query the RAG system with session isolation
             response, sources = st.session_state.rag_pipeline.query(
                 user_question,
                 session_id=st.session_state.session_id
             )
             
-            # Add assistant response
+            # Add assistant response to chat history
             st.session_state.chat_history.append({
                 'role': 'assistant',
                 'content': response,
@@ -269,29 +393,33 @@ def handle_chat_input(user_question):
 
 def clear_all_data():
     """Clear all data including chat, documents, and URLs"""
+    # Reset all session state variables
     st.session_state.chat_history = []
     st.session_state.documents_count = 0
     st.session_state.processed_files = set()
     st.session_state.processed_urls = set()
+    st.session_state.current_url = ""
     st.session_state.session_id = str(uuid.uuid4())
-    # Clear from vector store
+    
+    # Clear from vector store (session-based cleanup)
     try:
         st.session_state.rag_pipeline.clear_session(st.session_state.session_id)
-    except:
-        pass
+    except Exception as e:
+        print(f"Error clearing session data: {e}")
 
 def main():
-    """Main application"""
+    """Main application function"""
+    # Initialize session state variables
     initialize_session_state()
     
-    # Header
+    # Application header
     st.title("🤖 RAG Assistant")
     st.markdown("Upload documents or add web content, then chat with your data")
     
-    # System status check
+    # Check system status (Ollama connection)
     ollama_running = check_system_status()
     
-    # Status indicator
+    # Display system status indicator
     if not ollama_running:
         st.markdown("""
         <div class="status-indicator status-warning">
@@ -311,12 +439,13 @@ def main():
         </div>
         """, unsafe_allow_html=True)
     
-    # Input section
+    # Content input section
     st.markdown("### Add Content")
     
     # Create two columns for file upload and URL input
     col1, col2 = st.columns(2)
     
+    # File upload column
     with col1:
         st.markdown("**Upload Files**")
         uploaded_files = st.file_uploader(
@@ -330,18 +459,29 @@ def main():
         if uploaded_files:
             process_files(uploaded_files)
     
+    # URL input column
     with col2:
         st.markdown("**Add Web Content**")
+        
+        # URL input section with button below
         url = st.text_input(
             "Enter URL",
             placeholder="https://example.com/article",
             label_visibility="collapsed",
-            key="url_input"
+            key="url_input",
+            value=st.session_state.current_url
         )
         
-        # Auto-process URL when entered and valid
-        if url and url.startswith(('http://', 'https://')):
+        # Add URL button below the text input
+        add_url_clicked = st.button("🌐 Add URL", use_container_width=True, type="primary")
+        
+        # Process URL when button is clicked
+        if add_url_clicked and url and url.startswith(('http://', 'https://')):
             process_url(url)
+        elif add_url_clicked and url:
+            st.error("Please enter a valid URL starting with http:// or https://")
+        elif add_url_clicked:
+            st.error("Please enter a URL")
     
     # Chat section
     st.markdown("### Chat")
@@ -359,12 +499,14 @@ def main():
         
         for message in st.session_state.chat_history:
             if message['role'] == 'user':
+                # Display user message
                 st.markdown(f"""
                 <div class="message user-message">
                     <strong>You:</strong> {message['content']}
                 </div>
                 """, unsafe_allow_html=True)
             else:
+                # Display assistant message with sources
                 sources_html = ""
                 if message.get('sources'):
                     sources_html = "<br>" + "".join([f'<span class="source-tag">{source}</span>' for source in message['sources']])
@@ -377,23 +519,28 @@ def main():
         
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Chat input
+    # Chat input with Enter key support
     if 'chat_input_key' not in st.session_state:
         st.session_state.chat_input_key = 0
     
-    user_question = st.text_input(
-        "Ask a question about your content:",
-        placeholder="What is the main topic discussed?",
-        key=f"chat_input_{st.session_state.chat_input_key}"
-    )
+    # Create form for Enter key support
+    with st.form(key=f"chat_form_{st.session_state.chat_input_key}", clear_on_submit=True):
+        user_question = st.text_input(
+            "Ask a question about your content:",
+            placeholder="What is the main topic discussed?",
+            key=f"chat_input_{st.session_state.chat_input_key}"
+        )
+        
+        # Send button with proper styling
+        send_clicked = st.form_submit_button("💬 Send", use_container_width=True, type="primary")
     
-    # Send button
-    if st.button("💬 Send", use_container_width=True):
-        if user_question.strip():
-            handle_chat_input(user_question)
-            # Clear the input by incrementing the key
-            st.session_state.chat_input_key += 1
-            st.rerun()
+    # Handle form submission
+    if send_clicked and user_question.strip():
+        handle_chat_input(user_question)
+        # Clear the input by incrementing the key
+        st.session_state.chat_input_key += 1
+        st.rerun()
 
+# Application entry point
 if __name__ == "__main__":
     main()
