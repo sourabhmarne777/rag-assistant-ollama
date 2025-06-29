@@ -52,6 +52,7 @@ button[aria-label="collapse sidebar"],
     margin-left: 340px !important;
     padding-left: 1rem !important;
     max-width: calc(100% - 340px) !important;
+    padding-bottom: 120px !important;
 }
 
 /* Main Header */
@@ -131,7 +132,7 @@ button[aria-label="collapse sidebar"],
 
 .storage-card-header {
     font-size: 0.75rem;
-    color: #666;
+    color: #333;
     font-weight: 600;
     margin-bottom: 0.4rem;
     text-transform: uppercase;
@@ -155,55 +156,51 @@ button[aria-label="collapse sidebar"],
 /* Status Card Colors */
 .status-card.status-healthy {
     background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-    border: 1px solid #28a745;
+    border: 2px solid #28a745;
 }
 
-.status-card.status-healthy .storage-card-value {
-    color: #155724;
-}
-
+.status-card.status-healthy .storage-card-header,
+.status-card.status-healthy .storage-card-value,
 .status-card.status-healthy .storage-card-subtext {
     color: #155724 !important;
+    font-weight: 700 !important;
 }
 
 .status-card.status-warning {
     background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    border: 1px solid #ffc107;
+    border: 2px solid #ffc107;
 }
 
-.status-card.status-warning .storage-card-value {
-    color: #856404;
-}
-
+.status-card.status-warning .storage-card-header,
+.status-card.status-warning .storage-card-value,
 .status-card.status-warning .storage-card-subtext {
     color: #856404 !important;
+    font-weight: 700 !important;
 }
 
 .status-card.status-critical {
     background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-    border: 1px solid #dc3545;
+    border: 2px solid #dc3545;
 }
 
-.status-card.status-critical .storage-card-value {
-    color: #721c24;
-}
-
+.status-card.status-critical .storage-card-header,
+.status-card.status-critical .storage-card-value,
 .status-card.status-critical .storage-card-subtext {
     color: #721c24 !important;
+    font-weight: 700 !important;
 }
 
 /* Usage Card Colors */
 .usage-card {
     background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-    border: 1px solid #2196f3;
+    border: 2px solid #2196f3;
 }
 
-.usage-card .storage-card-value {
-    color: #0d47a1;
-}
-
+.usage-card .storage-card-header,
+.usage-card .storage-card-value,
 .usage-card .storage-card-subtext {
     color: #0d47a1 !important;
+    font-weight: 700 !important;
 }
 
 /* Chat Messages - Improved design */
@@ -280,10 +277,12 @@ button[aria-label="collapse sidebar"],
     bottom: 0 !important;
     left: 340px !important;
     right: 0 !important;
-    background: white !important;
-    padding: 1rem !important;
-    border-top: 1px solid #e9ecef !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 1rem 2rem !important;
+    border-top: 1px solid #e5e7eb !important;
     z-index: 1000 !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
 .stChatInput > div {
@@ -291,15 +290,17 @@ button[aria-label="collapse sidebar"],
     margin: 0 auto !important;
     position: relative !important;
     border-radius: 24px !important;
-    border: 1px solid #d1d5db !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
+    border: 2px solid #e5e7eb !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
     background: white !important;
     overflow: hidden !important;
+    transition: all 0.3s ease !important;
 }
 
 .stChatInput > div:focus-within {
     border-color: #10a37f !important;
-    box-shadow: 0 4px 20px rgba(16, 163, 127, 0.2) !important;
+    box-shadow: 0 4px 24px rgba(16, 163, 127, 0.25) !important;
+    transform: translateY(-2px) !important;
 }
 
 /* Perfect input field styling */
@@ -317,7 +318,7 @@ button[aria-label="collapse sidebar"],
     font-weight: 400 !important;
     -webkit-text-fill-color: #374151 !important;
     caret-color: #10a37f !important;
-    padding: 12px 16px !important;
+    padding: 16px 60px 16px 20px !important;
     border: none !important;
     border-radius: 0 !important;
     outline: none !important;
@@ -326,6 +327,7 @@ button[aria-label="collapse sidebar"],
     line-height: 1.5 !important;
     min-height: 24px !important;
     max-height: 200px !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 .stChatInput input::placeholder,
@@ -334,39 +336,40 @@ button[aria-label="collapse sidebar"],
     color: #9ca3af !important;
     opacity: 1 !important;
     -webkit-text-fill-color: #9ca3af !important;
+    font-weight: 400 !important;
 }
 
 /* Send button styling */
 .stChatInput button {
     position: absolute !important;
-    right: 8px !important;
+    right: 12px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     background: #10a37f !important;
     color: white !important;
     border: none !important;
-    border-radius: 6px !important;
-    width: 32px !important;
-    height: 32px !important;
+    border-radius: 8px !important;
+    width: 36px !important;
+    height: 36px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    transition: background-color 0.2s ease !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(16, 163, 127, 0.3) !important;
 }
 
 .stChatInput button:hover {
     background: #0d9488 !important;
+    transform: translateY(-50%) scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(16, 163, 127, 0.4) !important;
 }
 
 .stChatInput button:disabled {
     background: #d1d5db !important;
     cursor: not-allowed !important;
-}
-
-/* Adjust main content for fixed chat input */
-.main .block-container {
-    padding-bottom: 100px !important;
+    transform: translateY(-50%) !important;
+    box-shadow: none !important;
 }
 
 /* Text Input - Perfect visibility */
@@ -491,6 +494,7 @@ button[aria-label="collapse sidebar"],
     
     .stChatInput {
         left: 280px !important;
+        padding: 1rem !important;
     }
     
     .main-header {

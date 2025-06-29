@@ -130,24 +130,13 @@ class VectorStore:
                 'status': 'good'
             }
 
-    def reset_collection(self):
-        """Delete all vectors"""
-        try:
-            self.client.delete_collection(COLLECTION_NAME)
-            self.setup_collection()
-            logger.info("Collection reset")
-            return True
-        except Exception as e:
-            logger.error(f"Error resetting collection: {e}")
-            return False
-
     def clear_all_data(self):
-        """Clear all data from the collection"""
+        """Clear all data from the collection - COMPLETE RESET"""
         try:
             # Delete and recreate collection to clear all data
             self.client.delete_collection(COLLECTION_NAME)
             self.setup_collection()
-            logger.info("All data cleared from collection")
+            logger.info("All data cleared from collection - complete reset performed")
             return True
         except Exception as e:
             logger.error(f"Error clearing all data: {e}")
