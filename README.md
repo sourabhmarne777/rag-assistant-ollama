@@ -1,6 +1,6 @@
 # 🤖 RAG Assistant with Ollama & Qdrant
 
-A production-grade **Retrieval-Augmented Generation (RAG)** assistant that combines local AI models via **Ollama** with cloud-hosted vector storage using **Qdrant Cloud**. Built with **Streamlit** for an intuitive web interface.
+A **Retrieval-Augmented Generation (RAG)** assistant that combines local AI models via **Ollama** with cloud-hosted vector storage using **Qdrant Cloud**. Built with **Streamlit** for an intuitive web interface.
 
 ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -382,90 +382,10 @@ CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0
 - **AWS/GCP/Azure**: Full control with container services
 - **Railway/Render**: Simple deployment platforms
 
-### 🔒 Production Considerations
-
-1. **Environment Security**: Use proper secret management
-2. **Rate Limiting**: Implement API rate limiting
-3. **Monitoring**: Add logging and health checks
-4. **Scaling**: Consider load balancing for multiple users
-5. **Backup**: Regular backup of vector data
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how to get started:
-
-1. **Fork the Repository**
-2. **Create Feature Branch**: `git checkout -b feature/amazing-feature`
-3. **Make Changes**: Follow the existing code style
-4. **Add Tests**: Ensure your changes are tested
-5. **Commit Changes**: `git commit -m 'Add amazing feature'`
-6. **Push to Branch**: `git push origin feature/amazing-feature`
-7. **Open Pull Request**: Describe your changes clearly
-
-### 📝 Development Guidelines
-
-- **Code Style**: Follow PEP 8 for Python code
-- **Comments**: Add clear comments for complex logic
-- **Error Handling**: Include comprehensive error handling
-- **Documentation**: Update README for new features
-- **Testing**: Test with various file types and URLs
-
-## 🐛 Troubleshooting
-
-### Common Issues and Solutions
-
-#### **Ollama Connection Issues**
-```bash
-# Check if Ollama is running
-curl http://localhost:11434/api/tags
-
-# Restart Ollama
-ollama serve
-
-# Check available models
-ollama list
-```
-
-#### **PDF Processing Errors**
-- **Issue**: "No text could be extracted from PDF"
-- **Solution**: PDF might be image-based. Try converting to text-based PDF first
-- **Alternative**: Use OCR tools like Tesseract for image-based PDFs
-
-#### **Qdrant Connection Issues**
-- **Check Credentials**: Verify URL and API key in `.env`
-- **Network Issues**: Ensure internet connectivity
-- **Quota Limits**: Check if you've exceeded free tier limits
-
-#### **Memory Issues**
-- **Large Files**: Break large documents into smaller chunks
-- **Model Size**: Consider using smaller models like `llama2:7b`
-- **System Resources**: Ensure adequate RAM (8GB+ recommended)
-
-### 📊 Performance Optimization
-
-1. **Chunk Size**: Adjust `chunk_size` in document processor for your use case
-2. **Model Selection**: Use smaller models for faster inference
-3. **Batch Processing**: Process multiple documents together
-4. **Caching**: Implement caching for frequently accessed content
 
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-### MIT License Summary
-- ✅ **Commercial Use**: Use in commercial projects
-- ✅ **Modification**: Modify the code as needed
-- ✅ **Distribution**: Share and distribute freely
-- ✅ **Private Use**: Use privately without restrictions
-- ❗ **Liability**: No warranty provided
-- ❗ **Attribution**: Include original license and copyright
-
-
-### 🔗 Quick Links
-
-- [Ollama Installation](https://ollama.ai/download)
-- [Qdrant Cloud Signup](https://cloud.qdrant.io/)
-- [Streamlit Documentation](https://docs.streamlit.io/)
-- [Python Virtual Environments](https://docs.python.org/3/tutorial/venv.html)
-- [Git Installation](https://git-scm.com/downloads)
+⭐ If you find this project useful, please consider giving it a star!
 
